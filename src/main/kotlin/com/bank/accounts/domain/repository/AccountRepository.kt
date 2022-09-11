@@ -1,19 +1,21 @@
 package com.bank.accounts.domain.repository
 
 import com.bank.accounts.domain.model.Account
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 
 interface AccountRepository {
 
-    fun findById(id: String): Account?
+    fun findById(id: String): Mono<Account>
 
-    fun findByPersonCpf(cpf: String): Account?
+    fun findAllByPersonCpf(cpf: String): Flux<Account>
 
-    fun findByAccountNumberAndBankBranch(accountNumber: String, bankBranch: String): Account?
+    fun findByAccountNumberAndBankBranch(accountNumber: String, bankBranch: String):Mono<Account>
 
-    fun create(account: Account): Account
+    fun create(account: Account): Mono<Account>
 
-    fun update(account: Account): Account
+    fun update(account: Account): Mono<Account>
 
     fun deleteById(id: String)
 }

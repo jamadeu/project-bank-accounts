@@ -12,5 +12,5 @@ data class Person(
     @JsonFormat(pattern = "yyyy-MM-dd")
     val createdAt: LocalDate,
     @JsonFormat(pattern = "yyyy-MM-dd")
-    val updatedAt: LocalDate? = LocalDate.now()
+    val updatedAt: LocalDate
 )
