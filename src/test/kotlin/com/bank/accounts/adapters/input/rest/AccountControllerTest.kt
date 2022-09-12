@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.BodySpec
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDate
 
@@ -53,6 +54,35 @@ internal class AccountControllerTest {
         webClient
             .get()
             .uri("/accounts/631f235a57b766bcfd0ce780")
+            .exchange()
+            .expectStatus().isNotFound
+            .expectBody()
+            .jsonPath("$.status").isEqualTo(404)
+            .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
+            .jsonPath("$.message").isEqualTo("404 NOT_FOUND \"Account not found\"")
+    }
+
+    @Test
+    fun `findAllByAccountHolderCpf returns a flux with account when it exists`() {
+        val account = getAccount()
+        `when`(accountRepository.findAllByAccountHolderCpf(account.accountHolder.cpf)).thenReturn(Flux.just(account))
+
+        webClient
+            .get()
+            .uri("/accounts/cpf/${account.accountHolder.cpf}")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(Array<Account>::class.java)
+            .isEqualTo<BodySpec<Array<Account>, *>>(arrayOf(account))
+    }
+
+    @Test
+    fun `findAllByAccountHolderCpf returns not found when account does not exists`() {
+        `when`(accountRepository.findAllByAccountHolderCpf(anyString())).thenReturn(Flux.empty())
+
+        webClient
+            .get()
+            .uri("/accounts/cpf/500.613.310-40")
             .exchange()
             .expectStatus().isNotFound
             .expectBody()

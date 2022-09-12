@@ -7,8 +7,6 @@ import reactor.core.publisher.Mono
 
 
 interface SpringRepository : ReactiveMongoRepository<Account, String> {
-
     fun findAllByAccountHolderCpf(cpf: String): Flux<Account>
-
     fun findByAccountNumberAndBankBranch(accountNumber: String, bankBranch: String): Mono<Account>
 }
