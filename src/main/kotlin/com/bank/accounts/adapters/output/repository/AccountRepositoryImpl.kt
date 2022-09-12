@@ -14,7 +14,7 @@ class AccountRepositoryImpl(private val springRepository: SpringRepository) : Ac
     }
 
     override fun findAllByPersonCpf(cpf: String): Flux<Account> {
-        return springRepository.findAllByPersonCpf(cpf)
+        return springRepository.findAllByAccountHolderCpf(cpf)
     }
 
     override fun findByAccountNumberAndBankBranch(accountNumber: String, bankBranch: String): Mono<Account> {
