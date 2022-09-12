@@ -5,7 +5,7 @@ import org.bson.types.ObjectId
 import java.time.LocalDate
 
 data class Person(
-    val id: ObjectId,
+    val id: String,
     val name: String,
     val cpf: String,
     val address: String,
