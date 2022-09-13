@@ -1,7 +1,6 @@
 package com.bank.accounts.domain.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import org.bson.types.ObjectId
 import java.time.LocalDate
 
 data class Person(

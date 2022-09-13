@@ -10,7 +10,7 @@ import java.time.LocalDate
 data class Account(
 
     @Id
-    val id: String,
+    var id: String? = null,
 
     val accountNumber: String,
 
