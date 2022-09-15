@@ -1,5 +1,6 @@
 package com.bank.accounts.configuration
 
+import com.bank.accounts.domain.model.Person
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -20,6 +21,7 @@ class HttpClientConfiguration(
     fun webClient(): WebClient = WebClient.builder()
         .baseUrl(baseUrl)
         .filter(logRequestFilter())
+        .filter(logResponseFilter())
         .build()
 
     @Bean
@@ -28,6 +30,17 @@ class HttpClientConfiguration(
             logger.info(
                 "method={}, uri={}, headers={}",
                 it.method(), it.url(), it.headers()
+            )
+        }
+        Mono.just(it)
+    }
+
+    @Bean
+    fun logResponseFilter(): ExchangeFilterFunction = ExchangeFilterFunction.ofResponseProcessor {
+        run {
+            logger.info(
+                "body={}, status={}, headers={}",
+                it.bodyToMono(Person::class.java).single(), it.statusCode(), it.headers().asHttpHeaders()
             )
         }
         Mono.just(it)

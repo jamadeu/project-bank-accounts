@@ -5,7 +5,6 @@ import com.bank.accounts.domain.http.PersonHttpClient
 import com.bank.accounts.domain.model.Account
 import com.bank.accounts.domain.model.AccountStatus
 import com.bank.accounts.domain.repository.AccountRepository
-import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -31,27 +30,29 @@ class AccountService(
             .switchIfEmpty(Flux.error { ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found") })
             .log("AccountService.findAllByAccountHolderCpf", Level.INFO, SignalType.ON_COMPLETE)
 
-    suspend fun create(request: CreateAccountRequest): Mono<String> {
+    fun create(request: CreateAccountRequest): Mono<Account> {
         createRequestIsValid(request)
-        val person = personHttpClient
+        return personHttpClient
             .getPersonByCpf(request.accountHolderCpf!!)
             .switchIfEmpty(Mono.error {
                 ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "AccountService - create : person is null"
+                    HttpStatus.NOT_FOUND,
+                    "AccountService - create.getPersonByCpf : Person not found"
                 )
             })
-            .log("AccountService.create", Level.INFO, SignalType.ON_COMPLETE)
-        val accountToCreate = Account(
-            accountNumber = request.accountNumber!!,
-            bankBranch = request.bankBranch!!,
-            accountHolder = person.awaitSingle(),
-            status = AccountStatus.ACTIVE
-        )
-        return accountRepository
-            .create(accountToCreate)
-            .log("AccountService.create", Level.INFO, SignalType.ON_COMPLETE)
-            .map { it.id }
+            .flatMap { Mono.just(it.toPerson()) }
+            .flatMap {
+                accountRepository
+                    .create(
+                        Account(
+                            accountNumber = request.accountNumber!!,
+                            bankBranch = request.bankBranch!!,
+                            accountHolder = it,
+                            status = AccountStatus.ACTIVE
+                        )
+                    )
+            }
+            .log("AccountService.personHttpClient.getPersonByCpf", Level.INFO, SignalType.ON_COMPLETE)
     }
 
     private fun createRequestIsValid(request: CreateAccountRequest) {
@@ -71,4 +72,5 @@ class AccountService(
                 )
             }
     }
+
 }

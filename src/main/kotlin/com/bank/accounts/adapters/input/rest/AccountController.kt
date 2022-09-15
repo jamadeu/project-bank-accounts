@@ -3,6 +3,7 @@ package com.bank.accounts.adapters.input.rest
 import com.bank.accounts.adapters.input.rest.dto.CreateAccountRequest
 import com.bank.accounts.application.AccountService
 import com.bank.accounts.domain.model.Account
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
@@ -16,6 +17,8 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/accounts")
 class AccountController(private val accountService: AccountService) {
+
+    private val logger = LoggerFactory.getLogger(AccountController::class.java)
 
     @GetMapping("/{id}")
     fun findById(@PathVariable("id") id: String): Mono<ResponseEntity<Account>> {
@@ -32,14 +35,14 @@ class AccountController(private val accountService: AccountService) {
             .log("AccountController.findAllByAccountHolderCpf", Level.INFO, SignalType.ON_COMPLETE)
 
     @PostMapping
-    suspend fun create(@Valid @RequestBody request: CreateAccountRequest): Mono<ResponseEntity<Unit>> =
-        accountService
+    fun create(@Valid @RequestBody request: CreateAccountRequest): Mono<ResponseEntity<Unit>> {
+        return accountService
             .create(request)
-            .map {
-                ResponseEntity
-                    .created(URI.create(it))
-                    .body(Unit)
+            .map<ResponseEntity<Unit>?> {
+                ResponseEntity.created(
+                    URI.create(it.id!!)
+                ).build()
             }
             .log("AccountController.create", Level.INFO, SignalType.ON_COMPLETE)
-
+    }
 }
