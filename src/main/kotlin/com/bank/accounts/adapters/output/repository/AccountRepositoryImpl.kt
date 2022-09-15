@@ -11,18 +11,19 @@ class AccountRepositoryImpl(private val springRepository: SpringRepository) : Ac
     override fun findById(id: String): Mono<Account> {
         return springRepository.findById(id)
     }
+
     override fun findAllByAccountHolderCpf(cpf: String): Flux<Account> {
         return springRepository.findAllByAccountHolderCpf(cpf)
     }
-    override fun findByAccountNumberAndBankBranch(accountNumber: String, bankBranch: String): Mono<Account> {
-        return springRepository.findByAccountNumberAndBankBranch(accountNumber, bankBranch)
-    }
+
     override fun create(account: Account): Mono<Account> {
         return springRepository.save(account)
     }
+
     override fun update(account: Account): Mono<Account> {
         return springRepository.save(account)
     }
+
     override fun deleteById(id: String) {
         springRepository.deleteById(id)
     }

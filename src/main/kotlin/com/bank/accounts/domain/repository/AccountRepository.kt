@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono
 interface AccountRepository {
     fun findById(id: String): Mono<Account>
     fun findAllByAccountHolderCpf(cpf: String): Flux<Account>
-    fun findByAccountNumberAndBankBranch(accountNumber: String, bankBranch: String):Mono<Account>
     fun create(account: Account): Mono<Account>
     fun update(account: Account): Mono<Account>
     fun deleteById(id: String)

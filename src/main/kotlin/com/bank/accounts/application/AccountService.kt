@@ -31,7 +31,6 @@ class AccountService(
             .log("AccountService.findAllByAccountHolderCpf", Level.INFO, SignalType.ON_COMPLETE)
 
     fun create(request: CreateAccountRequest): Mono<Account> {
-        createRequestIsValid(request)
         return personHttpClient
             .getPersonByCpf(request.accountHolderCpf!!)
             .switchIfEmpty(Mono.error {
@@ -54,23 +53,4 @@ class AccountService(
             }
             .log("AccountService.personHttpClient.getPersonByCpf", Level.INFO, SignalType.ON_COMPLETE)
     }
-
-    private fun createRequestIsValid(request: CreateAccountRequest) {
-        if (request.accountHolderCpf.isNullOrBlank() ||
-            request.accountNumber.isNullOrBlank() ||
-            request.bankBranch.isNullOrBlank()
-        ) {
-            throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "AccountService - create : request is invalid - $request"
-            )
-        }
-        accountRepository
-            .findByAccountNumberAndBankBranch(request.accountNumber, request.bankBranch)
-            .doOnNext {
-                if (it != null) throw ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "AccountService - create : account already exists - $request"
-                )
-            }
-    }
-
 }
