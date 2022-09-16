@@ -2,9 +2,11 @@ package com.bank.accounts.adapters.input.rest
 
 import com.bank.accounts.adapters.input.rest.dto.CreateAccountRequest
 import com.bank.accounts.adapters.input.rest.exception.CustomAttributes
+import com.bank.accounts.adapters.output.http.PersonHttpClientImpl
 import com.bank.accounts.adapters.output.http.dto.FindPersonByCpfResponse
 import com.bank.accounts.application.AccountService
 import com.bank.accounts.configuration.HttpClientConfiguration
+import com.bank.accounts.domain.http.PersonHttpClient
 import com.bank.accounts.domain.model.Account
 import com.bank.accounts.domain.model.AccountStatus
 import com.bank.accounts.domain.model.Person
@@ -15,6 +17,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.web.WebProperties.Resources
@@ -116,6 +119,12 @@ internal class AccountControllerTest {
         val person = getPerson()
         val findPersonByCpfResponse = getFindPersonByCpfResponse(person)
         val account = getAccount(person)
+        val accountToCreate = Account(
+            accountNumber = account.accountNumber,
+            bankBranch = account.bankBranch,
+            accountHolder = person,
+            status = AccountStatus.ACTIVE
+        )
         val request = getCreateRequest()
         `when`(webClient.get()).thenReturn(requestBodyUriSpec)
         `when`(requestBodyUriSpec.uri(anyString(), anyString())).thenReturn(requestBodySpec)
@@ -124,6 +133,7 @@ internal class AccountControllerTest {
         `when`(responseSpec.onStatus(any(), any())).thenReturn(responseSpec)
         `when`(responseSpec.bodyToMono(FindPersonByCpfResponse::class.java))
             .thenReturn(Mono.just(findPersonByCpfResponse))
+        `when`(accountRepository.create(accountToCreate)).thenReturn(Mono.just(account))
 
         webTestClient
             .post()
