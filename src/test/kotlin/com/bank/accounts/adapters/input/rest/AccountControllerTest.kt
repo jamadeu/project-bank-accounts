@@ -2,21 +2,20 @@ package com.bank.accounts.adapters.input.rest
 
 import com.bank.accounts.adapters.input.rest.dto.CreateAccountRequest
 import com.bank.accounts.adapters.input.rest.exception.CustomAttributes
-import com.bank.accounts.adapters.output.http.PersonHttpClientImpl
 import com.bank.accounts.adapters.output.http.dto.FindPersonByCpfResponse
 import com.bank.accounts.application.AccountService
-import com.bank.accounts.configuration.HttpClientConfiguration
-import com.bank.accounts.domain.http.PersonHttpClient
 import com.bank.accounts.domain.model.Account
 import com.bank.accounts.domain.model.AccountStatus
 import com.bank.accounts.domain.model.Person
 import com.bank.accounts.domain.repository.AccountRepository
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentMatchers.any
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EmptySource
+import org.junit.jupiter.params.provider.NullSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -143,6 +142,58 @@ internal class AccountControllerTest {
             .expectStatus().isCreated
             .expectHeader()
             .location(account.id.toString())
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EmptySource
+    fun `create returns bad request when accountNumber is null`(accountNumber: String?) {
+        val request = getCreateRequest(accountNumber = accountNumber)
+
+        webTestClient
+            .post()
+            .uri("/accounts")
+            .body(BodyInserters.fromValue(request))
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+            .jsonPath("$.status").isEqualTo(400)
+            .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EmptySource
+    fun `create returns bad request when bankBranch is null`(bankBranch: String?) {
+        val request = getCreateRequest(bankBranch = bankBranch)
+
+        webTestClient
+            .post()
+            .uri("/accounts")
+            .body(BodyInserters.fromValue(request))
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+            .jsonPath("$.status").isEqualTo(400)
+            .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EmptySource
+    @ValueSource(strings = ["111.111.111-11"])
+    fun `create returns bad request when cpf is null or invalid`(cpf: String?) {
+        val request = getCreateRequest(accountHolderCpf = cpf)
+
+        webTestClient
+            .post()
+            .uri("/accounts")
+            .body(BodyInserters.fromValue(request))
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+            .jsonPath("$.status").isEqualTo(400)
+            .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
     }
 
     private fun getCreateRequest(
