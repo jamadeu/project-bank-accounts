@@ -250,6 +250,18 @@ internal class AccountControllerTest {
             .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
     }
 
+    @Test
+    fun `delete returns ok when successful`() {
+        val account = getAccount()
+        `when`(accountRepository.deleteById(account.id!!)).thenReturn(Mono.empty())
+
+        webTestClient
+            .delete()
+            .uri("/accounts/${account.id}")
+            .exchange()
+            .expectStatus().isOk
+    }
+
     private fun getUpdateRequest(
         accountHolderName: String? = "New Name",
         accountHolderAddress: String? = "New Address"

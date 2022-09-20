@@ -57,4 +57,11 @@ class AccountController(private val accountService: AccountService) {
             .just<ResponseEntity<Unit>?>(ResponseEntity.ok().build())
             .log("AccountController.update", Level.INFO, SignalType.ON_COMPLETE)
     }
+
+    @DeleteMapping("/{id}")
+    fun delete(@PathVariable("id") id: String): Mono<ResponseEntity<Unit>> {
+        return accountService.delete(id)
+            .map<ResponseEntity<Unit>?> { ResponseEntity.ok().build() }
+            .log("AccountController.delete", Level.INFO, SignalType.ON_COMPLETE)
+    }
 }

@@ -70,4 +70,8 @@ class AccountService(
             }
             .log("AccountService.update", Level.INFO, SignalType.ON_COMPLETE)
     }
+
+    fun delete(id: String): Mono<Unit> {
+        return accountRepository.deleteById(id)
+    }
 }

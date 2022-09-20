@@ -24,7 +24,9 @@ class AccountRepositoryImpl(private val springRepository: SpringRepository) : Ac
         return springRepository.save(account)
     }
 
-    override fun deleteById(id: String) {
-        springRepository.deleteById(id)
+    override fun deleteById(id: String): Mono<Unit> {
+        return springRepository
+            .deleteById(id)
+            .then(Mono.empty())
     }
 }

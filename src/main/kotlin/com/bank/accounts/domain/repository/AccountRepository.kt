@@ -10,5 +10,5 @@ interface AccountRepository {
     fun findAllByAccountHolderCpf(cpf: String): Flux<Account>
     fun create(account: Account): Mono<Account>
     fun update(account: Account): Mono<Account>
-    fun deleteById(id: String)
+    fun deleteById(id: String): Mono<Unit>
 }
