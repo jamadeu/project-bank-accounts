@@ -1,6 +1,7 @@
 package com.bank.accounts.application
 
 import com.bank.accounts.adapters.input.rest.dto.CreateAccountRequest
+import com.bank.accounts.adapters.input.rest.dto.UpdateAccountRequest
 import com.bank.accounts.domain.http.PersonHttpClient
 import com.bank.accounts.domain.model.Account
 import com.bank.accounts.domain.model.AccountStatus
@@ -52,5 +53,21 @@ class AccountService(
                     )
             }
             .log("AccountService.personHttpClient.getPersonByCpf", Level.INFO, SignalType.ON_COMPLETE)
+    }
+
+    fun update(id: String, request: UpdateAccountRequest) {
+        findById(id)
+            .map {
+                it.accountHolder.name = request.accountHolderName ?: throw ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "UpdateAccountRequest invalid"
+                )
+                it.accountHolder.address = request.accountHolderAddress ?: throw ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "UpdateAccountRequest invalid"
+                )
+                accountRepository.update(it)
+            }
+            .log("AccountService.update", Level.INFO, SignalType.ON_COMPLETE)
     }
 }

@@ -1,6 +1,7 @@
 package com.bank.accounts.adapters.input.rest
 
 import com.bank.accounts.adapters.input.rest.dto.CreateAccountRequest
+import com.bank.accounts.adapters.input.rest.dto.UpdateAccountRequest
 import com.bank.accounts.adapters.input.rest.exception.CustomAttributes
 import com.bank.accounts.adapters.output.http.dto.FindPersonByCpfResponse
 import com.bank.accounts.application.AccountService
@@ -16,8 +17,7 @@ import org.junit.jupiter.params.provider.NullSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito.any
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.web.WebProperties.Resources
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -114,7 +114,7 @@ internal class AccountControllerTest {
     }
 
     @Test
-    fun `create returns a mono with account when successful`() {
+    fun `create returns created when successful`() {
         val person = getPerson()
         val findPersonByCpfResponse = getFindPersonByCpfResponse(person)
         val account = getAccount(person)
@@ -196,6 +196,68 @@ internal class AccountControllerTest {
             .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
     }
 
+    @Test
+    fun `update returns ok when successful`() {
+        val person = getPerson()
+        val account = getAccount(person)
+        val request = getUpdateRequest()
+        val personUpdated = getPerson(name = request.accountHolderName!!, address = request.accountHolderAddress!!)
+        val accountUpdated = getAccount(personUpdated)
+        `when`(accountRepository.findById(account.id!!)).thenReturn(Mono.just(account))
+        `when`(accountRepository.update(accountUpdated)).thenReturn(Mono.just(accountUpdated))
+
+        webTestClient
+            .put()
+            .uri("/accounts/${account.id}")
+            .body(BodyInserters.fromValue(request))
+            .exchange()
+            .expectStatus().isOk
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EmptySource
+    fun `update returns bad request when accountHolderName is null or empty`(accountHolderName: String?) {
+        val account = getAccount()
+        val request = getUpdateRequest(accountHolderName = accountHolderName)
+
+        webTestClient
+            .put()
+            .uri("/accounts/${account.id}")
+            .body(BodyInserters.fromValue(request))
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+            .jsonPath("$.status").isEqualTo(400)
+            .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EmptySource
+    fun `update returns bad request when accountHolderAddress is null or empty`(accountHolderAddress: String?) {
+        val account = getAccount()
+        val request = getUpdateRequest(accountHolderAddress = accountHolderAddress)
+
+        webTestClient
+            .put()
+            .uri("/accounts/${account.id}")
+            .body(BodyInserters.fromValue(request))
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectBody()
+            .jsonPath("$.status").isEqualTo(400)
+            .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened")
+    }
+
+    private fun getUpdateRequest(
+        accountHolderName: String? = "New Name",
+        accountHolderAddress: String? = "New Address"
+    ) = UpdateAccountRequest(
+        accountHolderName = accountHolderName,
+        accountHolderAddress = accountHolderAddress
+    )
+
     private fun getCreateRequest(
         accountNumber: String? = "1234",
         bankBranch: String? = "5678",
@@ -215,11 +277,11 @@ internal class AccountControllerTest {
         updatedAt = person.updatedAt
     )
 
-    private fun getPerson() = Person(
+    private fun getPerson(name: String = "Person", address: String = "Some address") = Person(
         id = "631cbd81e289015a8c508341",
-        name = "Person",
+        name = name,
         cpf = "291.521.810-22",
-        address = "Some address",
+        address = address,
         createdAt = LocalDate.of(2022, 9, 10),
         updatedAt = LocalDate.of(2022, 9, 10)
     )

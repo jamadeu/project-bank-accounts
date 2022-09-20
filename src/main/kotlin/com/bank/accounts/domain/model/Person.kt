@@ -5,9 +5,9 @@ import java.time.LocalDate
 
 data class Person(
     val id: String,
-    val name: String,
+    var name: String,
     val cpf: String,
-    val address: String,
+    var address: String,
     @JsonFormat(pattern = "yyyy-MM-dd")
     val createdAt: LocalDate,
     @JsonFormat(pattern = "yyyy-MM-dd")

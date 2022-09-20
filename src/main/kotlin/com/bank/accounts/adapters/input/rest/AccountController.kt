@@ -1,6 +1,7 @@
 package com.bank.accounts.adapters.input.rest
 
 import com.bank.accounts.adapters.input.rest.dto.CreateAccountRequest
+import com.bank.accounts.adapters.input.rest.dto.UpdateAccountRequest
 import com.bank.accounts.application.AccountService
 import com.bank.accounts.domain.model.Account
 import org.slf4j.LoggerFactory
@@ -44,5 +45,16 @@ class AccountController(private val accountService: AccountService) {
                 ).build()
             }
             .log("AccountController.create", Level.INFO, SignalType.ON_COMPLETE)
+    }
+
+    @PutMapping("/{id}")
+    fun update(
+        @PathVariable("id") id: String,
+        @Valid @RequestBody request: UpdateAccountRequest
+    ): Mono<ResponseEntity<Unit>> {
+        accountService.update(id, request)
+        return Mono
+            .just<ResponseEntity<Unit>?>(ResponseEntity.ok().build())
+            .log("AccountController.update", Level.INFO, SignalType.ON_COMPLETE)
     }
 }
